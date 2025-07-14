@@ -157,7 +157,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack }) => {
           
           <div className="chord-display-container bg-gray-50 p-4 rounded-lg border print:bg-white print:border-gray-300">
             <div 
-            className="chord-display text-sm sm:text-base print:text-sm"
+            className="chord-display"
             dangerouslySetInnerHTML={{ __html: transposedLyrics }}
             />
           </div>

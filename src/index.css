@@ -5,122 +5,169 @@
 /* Chord Display Styles */
 .chord-display {
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  white-space: pre-wrap;
-  line-height: 3em;
-  padding: 1rem 0;
+  white-space: pre-line;
+  line-height: 1.8;
+  padding: 1.5rem 0;
+  overflow-x: auto;
+  min-height: fit-content;
 }
 
-.chord-line {
+/* Estrutura para cada linha da música */
+.song-line {
+  display: block;
+  margin-bottom: 1.5rem;
   position: relative;
-  display: inline-block;
-  margin-right: 4px;
-  min-height: 2.5em;
-  vertical-align: top;
+  min-height: 3rem;
+  clear: both;
+  width: 100%;
 }
 
-.chord-above {
-  position: absolute;
-  top: -2.2em;
-  left: 0;
+/* Container para acordes de uma linha */
+.chords-line {
+  display: block;
+  height: 1.5rem;
+  margin-bottom: 0.3rem;
+  position: relative;
+  width: 100%;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #2563eb;
-  font-size: 0.85em;
+}
+
+/* Container para letras de uma linha */
+.lyrics-line {
+  display: block;
+  color: #374151;
+  line-height: 1.4;
+  min-height: 1.2rem;
+  word-wrap: break-word;
+  font-size: 1rem;
+}
+
+/* Acorde individual */
+.chord {
+  position: absolute;
+  top: 0;
+  font-weight: 600;
+  color: #2563eb;
+  font-size: 0.9rem;
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.9);
   padding: 2px 4px;
   border-radius: 3px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  min-width: fit-content;
+  z-index: 5;
+  height: fit-content;
 }
 
-.lyrics-text {
-  color: #374151;
-  line-height: 1.2em;
-  padding-top: 1em;
-  display: inline-block;
-  min-height: 1.5em;
-  word-break: break-word;
+/* Espaçamento entre seções */
+.song-section {
+  margin-bottom: 2rem;
+}
+
+.song-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Títulos de seções (Verso, Refrão, etc.) */
+.section-title {
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+  font-size: 1.1rem;
+}
+
+.section-title:first-child {
+  margin-top: 0;
 }
 
 /* Responsive chord adjustments */
 @media (max-width: 768px) {
   .chord-display {
-    font-size: 0.9rem;
-    line-height: 2.8em;
+    font-size: 0.85rem;
     padding: 0.5rem 0;
   }
   
-  .chord-above {
-    font-size: 0.8em;
-    top: -2em;
+  .song-line {
+    margin-bottom: 1.2rem;
+    min-height: 2.5rem;
+  }
+  
+  .chords-line {
+    height: 1.3rem;
+    font-size: 0.8rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.9rem;
+  }
+  
+  .chord {
+    font-size: 0.8rem;
     padding: 1px 3px;
-  }
-  
-  .lyrics-text {
-    font-size: 0.95em;
-    padding-top: 0.8em;
-  }
-  
-  .chord-line {
-    margin-right: 2px;
-    min-height: 2.2em;
   }
 }
 
 @media (max-width: 480px) {
   .chord-display {
-    font-size: 0.85rem;
-    line-height: 2.6em;
+    font-size: 0.8rem;
   }
   
-  .chord-above {
-    font-size: 0.75em;
-    top: -1.8em;
+  .song-line {
+    margin-bottom: 1rem;
+    min-height: 2.2rem;
+  }
+  
+  .chords-line {
+    height: 1.2rem;
+    font-size: 0.75rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.85rem;
+  }
+  
+  .chord {
+    font-size: 0.75rem;
     padding: 1px 2px;
   }
-  
-  .lyrics-text {
-    font-size: 0.9em;
-    padding-top: 0.6em;
-  }
-  
-  .chord-line {
-    margin-right: 1px;
-    min-height: 2em;
-  }
-}
-
-/* Ensure chords don't overlap */
-.chord-line + .chord-line {
-  margin-left: 2px;
-}
-
-/* Better spacing for consecutive chords */
-.chord-above + .chord-above {
-  margin-left: 4px;
 }
 
 /* Print specific chord styles */
 @media print {
-  .chord-above {
+  .chord {
     color: black !important;
     background: white !important;
     border: 1px solid #666 !important;
     box-shadow: none !important;
-    font-size: 0.75em !important;
-    top: -1.8em !important;
+    font-size: 0.7rem !important;
   }
   
-  .lyrics-text {
+  .lyrics-line {
     color: black !important;
-    font-size: 0.9em !important;
+    font-size: 0.85rem !important;
   }
   
   .chord-display {
-    line-height: 2.5em !important;
-    font-size: 0.85rem !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .song-line {
+    margin-bottom: 1rem !important;
+    min-height: 2rem !important;
+  }
+  
+  .chords-line {
+    height: 1rem !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .section-title {
+    font-size: 1rem !important;
+    margin-bottom: 0.8rem !important;
+    margin-top: 1.5rem !important;
   }
 }
 

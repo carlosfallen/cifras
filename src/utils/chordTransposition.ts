@@ -39,12 +39,60 @@ export const transposeChord = (chord: string, fromKey: MusicKey, toKey: MusicKey
 };
 
 export const formatLyricsWithChords = (lyrics: string): string => {
-  // Converter formato [C]palavra para formato com acordes acima
-  return lyrics.replace(/\[([^\]]+)\]([^\[\n]*)/g, (match, chord, text) => {
-    const chordSpan = `<span class="chord-above">${chord}</span>`;
-    const textSpan = text ? `<span class="lyrics-text">${text}</span>` : '';
-    return `<span class="chord-line">${chordSpan}${textSpan}</span>`;
-  });
+  const lines = lyrics.split('\n');
+  const formattedLines: string[] = [];
+  
+  for (const line of lines) {
+    if (line.trim() === '') {
+      formattedLines.push('<div class="song-line"></div>');
+      continue;
+    }
+    
+    // Verificar se é um título de seção (linhas que começam com maiúscula e não têm acordes)
+    if (!line.includes('[') && line.match(/^[A-ZÁÉÍÓÚÂÊÎÔÛÀÈÌÒÙÃÕÇ]/)) {
+      formattedLines.push(`<div class="section-title">${line}</div>`);
+      continue;
+    }
+    
+    // Processar linha com acordes
+    const chords: { chord: string; position: number }[] = [];
+    let lyricsText = line;
+    
+    // Extrair acordes e suas posições
+    const chordMatches = [...line.matchAll(/\[([^\]]+)\]/g)];
+    let offset = 0;
+    
+    for (const match of chordMatches) {
+      const chord = match[1];
+      const originalPosition = match.index! - offset;
+      chords.push({ chord, position: originalPosition });
+      
+      // Remover o acorde do texto das letras
+      lyricsText = lyricsText.replace(match[0], '');
+      offset += match[0].length;
+    }
+    
+    // Criar linha de acordes
+    let chordsHtml = '';
+    if (chords.length > 0) {
+      for (const { chord, position } of chords) {
+        const leftPosition = Math.max(0, position * 0.6); // Ajustar posicionamento
+        chordsHtml += `<span class="chord" style="left: ${leftPosition}rem;">${chord}</span>`;
+      }
+    }
+    
+    // Montar a linha completa
+    const songLineHtml = `
+      <div class="song-line">
+        <div class="chords-line">${chordsHtml}</div>
+        <div class="lyrics-line">${lyricsText || '&nbsp;'}</div>
+      </div>
+    `;
+    
+    formattedLines.push(songLineHtml);
+  }
+  
+  return formattedLines.join('');
 };
 
 export const transposeLyrics = (lyrics: string, fromKey: MusicKey, toKey: MusicKey): string => {
