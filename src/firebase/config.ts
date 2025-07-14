@@ -4,13 +4,14 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  // Replace with your Firebase config
-  apiKey: "demo-key",
-  authDomain: "music-platform-demo.firebaseapp.com",
-  projectId: "music-platform-demo",
-  storageBucket: "music-platform-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "demo-app-id"
+  apiKey: "AIzaSyDULf3XSwiiFQZ7q_M9YNieDbWZNLnO7Nw",
+  authDomain: "myapp-415315.firebaseapp.com",
+  databaseURL: "https://myapp-415315-default-rtdb.firebaseio.com",
+  projectId: "myapp-415315",
+  storageBucket: "myapp-415315.appspot.com",
+  messagingSenderId: "103002319588",
+  appId: "1:103002319588:web:bafec3a1e13bb0884e1af1",
+  measurementId: "G-D2Q8E9ZR6F"
 };
 
 export const app = initializeApp(firebaseConfig);
