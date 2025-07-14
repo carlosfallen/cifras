@@ -16,9 +16,9 @@
 /* Estrutura para cada linha da música */
 .song-line {
   display: block;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.4rem;
   position: relative;
-  min-height: 2.2rem;
+  min-height: 1.8rem;
   clear: both;
   width: 100%;
 }
@@ -66,7 +66,7 @@
 
 /* Espaçamento entre seções */
 .song-section {
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.8rem;
 }
 
 .song-section:last-child {
@@ -77,8 +77,8 @@
 .section-title {
   font-weight: bold;
   color: #1f2937;
-  margin-bottom: 0.6rem;
-  margin-top: 1.2rem;
+  margin-bottom: 0.4rem;
+  margin-top: 0.8rem;
   font-size: 1.1rem;
 }
 
@@ -94,8 +94,8 @@
   }
   
   .song-line {
-    margin-bottom: 0.7rem;
-    min-height: 2rem;
+    margin-bottom: 0.3rem;
+    min-height: 1.6rem;
   }
   
   .chords-line {
@@ -119,8 +119,8 @@
   }
   
   .song-line {
-    margin-bottom: 0.6rem;
-    min-height: 1.8rem;
+    margin-bottom: 0.25rem;
+    min-height: 1.5rem;
   }
   
   .chords-line {
@@ -158,8 +158,8 @@
   }
   
   .song-line {
-    margin-bottom: 0.8rem !important;
-    min-height: 1.6rem !important;
+    margin-bottom: 0.4rem !important;
+    min-height: 1.4rem !important;
   }
   
   .chords-line {
@@ -169,8 +169,8 @@
   
   .section-title {
     font-size: 0.9rem !important;
-    margin-bottom: 0.6rem !important;
-    margin-top: 1rem !important;
+    margin-bottom: 0.4rem !important;
+    margin-top: 0.6rem !important;
   }
 }
 
