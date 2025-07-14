@@ -76,8 +76,9 @@ export const formatLyricsWithChords = (lyrics: string): string => {
     let chordsHtml = '';
     if (chords.length > 0) {
       for (const { chord, position } of chords) {
-        const leftPosition = Math.max(0, position * 0.6); // Ajustar posicionamento
-        chordsHtml += `<span class="chord" style="left: ${leftPosition}rem;">${chord}</span>`;
+        // Calcular posição mais precisa baseada no caractere
+        const leftPosition = Math.max(0, position * 0.55); // Ajuste mais preciso
+        chordsHtml += `<span class="chord" style="left: ${leftPosition}ch;">${chord}</span>`;
       }
     }
     
