@@ -58,6 +58,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack }) => {
   };
 
   return (
+    <>
     <div className="max-w-4xl mx-auto">
       {/* Header - Hidden in print */}
       <div className="print:hidden mb-6">
@@ -195,5 +196,6 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack }) => {
         max-width: 100%;
       }
     `}</style>
+    </>
   );
 };
