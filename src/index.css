@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Chord Display Styles */
+.chord-display {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  white-space: pre-wrap;
+  line-height: 3em;
+  padding: 1rem 0;
+}
+
+.chord-line {
+  position: relative;
+  display: inline-block;
+  margin-right: 4px;
+  min-height: 2.5em;
+  vertical-align: top;
+}
+
+.chord-above {
+  position: absolute;
+  top: -2.2em;
+  left: 0;
+  font-weight: 600;
+  color: #2563eb;
+  font-size: 0.85em;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: fit-content;
+}
+
+.lyrics-text {
+  color: #374151;
+  line-height: 1.2em;
+  padding-top: 1em;
+  display: inline-block;
+  min-height: 1.5em;
+  word-break: break-word;
+}
+
+/* Responsive chord adjustments */
+@media (max-width: 768px) {
+  .chord-display {
+    font-size: 0.9rem;
+    line-height: 2.8em;
+    padding: 0.5rem 0;
+  }
+  
+  .chord-above {
+    font-size: 0.8em;
+    top: -2em;
+    padding: 1px 3px;
+  }
+  
+  .lyrics-text {
+    font-size: 0.95em;
+    padding-top: 0.8em;
+  }
+  
+  .chord-line {
+    margin-right: 2px;
+    min-height: 2.2em;
+  }
+}
+
+@media (max-width: 480px) {
+  .chord-display {
+    font-size: 0.85rem;
+    line-height: 2.6em;
+  }
+  
+  .chord-above {
+    font-size: 0.75em;
+    top: -1.8em;
+    padding: 1px 2px;
+  }
+  
+  .lyrics-text {
+    font-size: 0.9em;
+    padding-top: 0.6em;
+  }
+  
+  .chord-line {
+    margin-right: 1px;
+    min-height: 2em;
+  }
+}
+
+/* Ensure chords don't overlap */
+.chord-line + .chord-line {
+  margin-left: 2px;
+}
+
+/* Better spacing for consecutive chords */
+.chord-above + .chord-above {
+  margin-left: 4px;
+}
+
+/* Print specific chord styles */
+@media print {
+  .chord-above {
+    color: black !important;
+    background: white !important;
+    border: 1px solid #666 !important;
+    box-shadow: none !important;
+    font-size: 0.75em !important;
+    top: -1.8em !important;
+  }
+  
+  .lyrics-text {
+    color: black !important;
+    font-size: 0.9em !important;
+  }
+  
+  .chord-display {
+    line-height: 2.5em !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black !important;
+    background: white !important;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:block {
+    display: block !important;
+  }
+  
+  .print\:text-sm {
+    font-size: 10pt !important;
+  }
+  
+  .print\:text-xs {
+    font-size: 9pt !important;
+  }
+  
+  .print\:text-lg {
+    font-size: 14pt !important;
+  }
+  
+  .print\:leading-snug {
+    line-height: 1.25 !important;
+  }
+  
+  .print\:leading-tight {
+    line-height: 1.2 !important;
+  }
+  
+  .print\:mt-6 {
+    margin-top: 1.5rem !important;
+  }
+  
+  .print\:p-0 {
+    padding: 0 !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  .print\:border-none {
+    border: none !important;
+  }
+  
+  .print\:bg-white {
+    background-color: white !important;
+  }
+  
+  .print\:border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+  
+  /* Force black text for chords and lyrics */
+  .chord-display,
+  .lyrics-display {
+    color: black !important;
+  }
+  
+  /* Page break control */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+  
+  /* Ensure proper contrast */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
+/* Font loading and chord display improvements */
+.font-mono {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+/* Chord highlighting */
+.chord-text {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Focus improvements */
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
