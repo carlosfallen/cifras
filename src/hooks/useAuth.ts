@@ -15,14 +15,11 @@ export const useAuth = () => {
         if (userDoc.exists()) {
           setUser(userDoc.data() as User);
         } else {
-          // Create user document if it doesn't exist
           const newUser: User = {
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
-            displayName: firebaseUser.displayName || 'Anonymous User',
-            userType: 'reader',
-            createdAt: new Date(),
-            favorites: []
+            displayName: firebaseUser.displayName || 'Usuário',
+            createdAt: new Date()
           };
           await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
           setUser(newUser);
@@ -40,7 +37,7 @@ export const useAuth = () => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (email: string, password: string, displayName: string, userType: 'reader' | 'writer' = 'reader') => {
+  const register = async (email: string, password: string, displayName: string) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName });
     
@@ -48,9 +45,7 @@ export const useAuth = () => {
       uid: result.user.uid,
       email,
       displayName,
-      userType,
-      createdAt: new Date(),
-      favorites: []
+      createdAt: new Date()
     };
     
     await setDoc(doc(db, 'users', result.user.uid), newUser);
