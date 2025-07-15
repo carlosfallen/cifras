@@ -18,7 +18,14 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const keys = getAllKeys();
+  
+  // Todos os tons (maiores e menores)
+  const allKeys = [
+    // Tons maiores
+    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
+    // Tons menores
+    'Am', 'A#m', 'Bbm', 'Bm', 'Cm', 'C#m', 'Dbm', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gbm', 'Gm', 'G#m', 'Abm'
+  ];
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -121,23 +128,37 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
               </div>
             </div>
 
-            {/* Key */}
-            <div className="max-w-xs">
-              <label htmlFor="originalKey" className="block text-sm font-medium text-gray-700 mb-2">
-                Tom Original
-              </label>
-              <select
-                id="originalKey"
-                value={formData.originalKey}
-                onChange={(e) => handleInputChange('originalKey', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {keys.map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+            {/* Musical Key */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="originalKey" className="block text-sm font-medium text-gray-700 mb-2">
+                  Tom da Música *
+                </label>
+                <select
+                  id="originalKey"
+                  value={formData.originalKey}
+                  onChange={(e) => handleInputChange('originalKey', e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <optgroup label="Tons Maiores">
+                    {allKeys.filter(key => !key.includes('m')).map((key) => (
+                      <option key={key} value={key}>
+                        {key} (Maior)
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Tons Menores">
+                    {allKeys.filter(key => key.includes('m')).map((key) => (
+                      <option key={key} value={key}>
+                        {key} (Menor)
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Escolha o tom principal da música
+                </p>
+              </div>
             </div>
 
             {/* Lyrics/Chords */}

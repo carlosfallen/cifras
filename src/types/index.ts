@@ -10,6 +10,7 @@ export interface Song {
   title: string;
   artist: string;
   originalKey: MusicKey;
+  harmonicMinorKey: string;
   lyrics: string;
   authorId: string;
   authorName: string;
@@ -18,3 +19,14 @@ export interface Song {
 }
 
 export type MusicKey = 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B';
+
+export interface ScheduledSong {
+  id: string;
+  songId: string;
+  date: Date;
+  singer: string;
+  notes?: string;
+  createdAt: Date;
+  createdBy: string | null;
+  createdByName: string;
+}

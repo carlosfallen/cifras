@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Edit, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, Edit, Trash2, ChevronUp, ChevronDown, Calendar, Music, MoreVertical } from 'lucide-react';
+import { ScheduleSongForm } from './Calendar/ScheduleSongForm';
 import { Song, MusicKey } from '../types';
 import { transposeLyrics, formatLyricsWithChords, getAllKeys } from '../utils/chordTransposition';
 
@@ -12,6 +13,8 @@ interface SongViewerProps {
 
 export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, onDelete }) => {
   const [currentKey, setCurrentKey] = useState<MusicKey>(song.originalKey as MusicKey);
+  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   
   const keys = getAllKeys();
   const currentKeyIndex = keys.indexOf(currentKey);
@@ -34,69 +37,114 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
     if (confirm('Tem certeza que deseja excluir esta música?')) {
       onDelete();
     }
+    setShowActionsMenu(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Mobile Header */}
+      <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-50"
             >
               <ChevronLeft className="h-5 w-5" />
-              Voltar
+              <span>Voltar</span>
             </button>
 
             <div className="flex items-center gap-2">
+              {/* Schedule Button */}
+              <button
+                onClick={() => setShowScheduleForm(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 py-2 rounded-lg hover:shadow-lg transition-all duration-300 active:scale-95"
+                title="Agendar música"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm font-medium">Agendar</span>
+              </button>
+
+              {/* Edit Button */}
               <button
                 onClick={onEdit}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Editar"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-2 rounded-lg hover:shadow-lg transition-all duration-300 active:scale-95"
+                title="Editar música"
               >
-                <Edit className="h-5 w-5" />
+                <Edit className="h-4 w-4" />
+                <span className="text-sm font-medium">Editar</span>
               </button>
-              <button
-                onClick={handleDelete}
-                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="Excluir"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
+
+              {/* More Actions Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowActionsMenu(!showActionsMenu)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+                
+                {showActionsMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 bg-black/20 z-30"
+                      onClick={() => setShowActionsMenu(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40">
+                      <button
+                        onClick={handleDelete}
+                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Excluir
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Song Info */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{song.title}</h1>
-          <p className="text-xl text-gray-600">por {song.artist}</p>
+      {/* Main Content */}
+      <main className="px-4 py-4 pb-6">
+        {/* Song Info Card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 p-6 mb-4">
+          <div className="flex items-start gap-4">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl p-3 shadow-lg">
+              <Music className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold text-gray-900 mb-1 break-words">
+                {song.title}
+              </h1>
+              <p className="text-gray-600 break-words">
+                por {song.artist}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Transpose Controls */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 p-4 mb-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-700">Tom:</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center bg-gray-50 rounded-xl p-1">
                 <button
                   onClick={transposeDown}
-                  className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white rounded-lg transition-all active:scale-95"
                   title="Baixar tom"
                 >
                   <ChevronDown className="h-5 w-5" />
                 </button>
-                <span className="font-bold text-lg text-blue-600 min-w-[2rem] text-center">
+                <span className="font-bold text-lg text-blue-600 min-w-[2rem] text-center px-2">
                   {currentKey}
                 </span>
                 <button
                   onClick={transposeUp}
-                  className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white rounded-lg transition-all active:scale-95"
                   title="Subir tom"
                 >
                   <ChevronUp className="h-5 w-5" />
@@ -105,23 +153,83 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
             </div>
 
             {currentKey !== song.originalKey && (
-              <div className="text-sm text-gray-500">
-                Tom original: {song.originalKey}
+              <div className="text-xs text-gray-500">
+                Original: {song.originalKey}
               </div>
             )}
           </div>
         </div>
 
+        {/* Schedule Form Modal */}
+        {showScheduleForm && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md">
+              <ScheduleSongForm
+                song={song}
+                onClose={() => setShowScheduleForm(false)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Song Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="chord-display-container bg-gray-50 p-6 rounded-lg border">
-            <div 
-              className="chord-display"
-              dangerouslySetInnerHTML={{ __html: transposedLyrics }}
-            />
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 overflow-hidden">
+          <div className="p-4 border-b border-gray-100">
+            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Music className="h-4 w-4" />
+              Cifra
+            </h2>
+          </div>
+          
+          <div className="p-4">
+            <div className="chord-display-container bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 overflow-x-auto">
+              <div 
+                className="chord-display min-w-0 font-mono text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: transposedLyrics }}
+                style={{
+                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+                }}
+              />
+            </div>
           </div>
         </div>
       </main>
+
+      <style>{`
+        
+        .chord-display b {
+          color: #2563eb;
+          font-weight: 700;
+          font-size: 0.9em;
+          background: rgba(37, 99, 235, 0.1);
+          padding: 1px 4px;
+          border-radius: 4px;
+          margin: 0 1px;
+        }
+        
+        .chord-display br {
+          line-height: 1.8;
+        }
+        
+        /* Scrollbar styling */
+        .chord-display-container::-webkit-scrollbar {
+          height: 6px;
+        }
+        
+        .chord-display-container::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 3px;
+        }
+        
+        .chord-display-container::-webkit-scrollbar-thumb {
+          background: rgba(37, 99, 235, 0.3);
+          border-radius: 3px;
+        }
+        
+        .chord-display-container::-webkit-scrollbar-thumb:hover {
+          background: rgba(37, 99, 235, 0.5);
+        }
+      `}</style>
     </div>
   );
 };

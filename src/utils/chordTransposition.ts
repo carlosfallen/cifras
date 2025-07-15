@@ -1,5 +1,18 @@
 import { MusicKey } from '../types';
 
+// Mapeamento completo com sustenidos e bemóis
+const CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+// Equivalências enarmônicas (bemóis para sustenidos)
+const ENHARMONIC_MAP: Record<string, string> = {
+  'Db': 'C#',
+  'Eb': 'D#',
+  'Gb': 'F#',
+  'Ab': 'G#',
+  'Bb': 'A#'
+};
+
+// Progressão de acordes para cada tonalidade
 const CHORD_PROGRESSION: Record<MusicKey, string[]> = {
   'C': ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
   'C#': ['C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C'],
@@ -15,47 +28,131 @@ const CHORD_PROGRESSION: Record<MusicKey, string[]> = {
   'B': ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#']
 };
 
-// Regex mais específico para capturar acordes complexos
-const CHORD_REGEX = /\b[A-G][#b]?(?:maj|min|m|M|sus|dim|aug|add|°|ø)?[0-9]*(?:\/[A-G][#b]?)?\b/g;
+// Interface para partes do acorde
+interface ChordParts {
+  root: string;
+  accidental: string;
+  quality: string;
+  extension: string;
+  bass?: string;
+}
 
-export const transposeChord = (chord: string, fromKey: MusicKey, toKey: MusicKey): string => {
+// Regex mais preciso para capturar acordes complexos
+const CHORD_REGEX = /\b([A-G])([#b]?)(maj|min|m|M|sus[24]?|dim|aug|\+|°|ø|add)?(1[0-3]|[2-9]|add[2-9]|add1[0-3])?(?:\/([A-G][#b]?))?\b/g;
+
+// Função para normalizar nota (converte bemóis para sustenidos)
+const normalizeNote = (note: string): string => {
+  return ENHARMONIC_MAP[note] || note;
+};
+
+// Função para parsear acorde complexo
+export const parseChord = (chord: string): ChordParts | null => {
+  const cleanChord = chord.trim();
+  const match = cleanChord.match(/^([A-G])([#b]?)(maj|min|m|M|sus[24]?|dim|aug|\+|°|ø|add)?(1[0-3]|[2-9]|add[2-9]|add1[0-3])?(?:\/([A-G][#b]?))?$/);
+  
+  if (!match) return null;
+  
+  const [, root, accidental = '', quality = '', extension = '', bass] = match;
+  
+  return {
+    root: root + accidental,
+    accidental,
+    quality,
+    extension,
+    bass
+  };
+};
+
+// Função para transpor nota individual
+const transposeNote = (note: string, fromKey: MusicKey, toKey: MusicKey): string => {
+  const normalizedNote = normalizeNote(note);
   const fromProgression = CHORD_PROGRESSION[fromKey];
   const toProgression = CHORD_PROGRESSION[toKey];
   
-  // Extrair a nota fundamental do acorde (incluindo sustenido/bemol)
-  const rootMatch = chord.match(/^[A-G][#b]?/);
-  if (!rootMatch) return chord;
+  const position = fromProgression.indexOf(normalizedNote);
+  if (position === -1) return note;
   
-  const root = rootMatch[0];
-  const suffix = chord.slice(root.length);
-  
-  // Encontrar a posição da nota fundamental na progressão de origem
-  const position = fromProgression.indexOf(root);
-  if (position === -1) return chord;
-  
-  // Obter a nota correspondente na tonalidade de destino
-  const newRoot = toProgression[position];
-  return newRoot + suffix;
+  return toProgression[position];
 };
 
+// Função principal para transpor acordes
+export const transposeChord = (chord: string, fromKey: MusicKey, toKey: MusicKey): string => {
+  const parts = parseChord(chord);
+  if (!parts) return chord;
+  
+  const { root, quality, extension, bass } = parts;
+  
+  // Transpor a nota fundamental
+  const newRoot = transposeNote(root, fromKey, toKey);
+  
+  // Transpor o baixo se existir
+  const newBass = bass ? transposeNote(bass, fromKey, toKey) : undefined;
+  
+  // Reconstruir o acorde
+  let result = newRoot + quality + extension;
+  if (newBass) {
+    result += '/' + newBass;
+  }
+  
+  return result;
+};
+
+// Função para validar se um acorde é válido
+export const isValidChord = (chord: string): boolean => {
+  return parseChord(chord) !== null;
+};
+
+// Função para obter informações detalhadas do acorde
+export const getChordInfo = (chord: string): ChordParts | null => {
+  return parseChord(chord);
+};
+
+// Função para obter tipo de acorde (maior, menor, etc.)
+export const getChordType = (chord: string): string => {
+  const parts = parseChord(chord);
+  if (!parts) return 'Desconhecido';
+  
+  const { quality, extension } = parts;
+  
+  // Determinar tipo baseado na qualidade
+  if (quality === 'maj' || quality === 'M' || (!quality && !extension)) {
+    return extension ? `Maior com ${extension}` : 'Maior';
+  } else if (quality === 'min' || quality === 'm') {
+    return extension ? `Menor com ${extension}` : 'Menor';
+  } else if (quality.startsWith('sus')) {
+    return `Suspenso ${quality.slice(3)}`;
+  } else if (quality === 'dim' || quality === '°') {
+    return 'Diminuto';
+  } else if (quality === 'aug' || quality === '+') {
+    return 'Aumentado';
+  } else if (quality === 'ø') {
+    return 'Meio-diminuto';
+  } else if (quality === 'add') {
+    return `Adicionado ${extension}`;
+  }
+  
+  return quality + (extension ? ' ' + extension : '');
+};
+
+// Função melhorada para formatar letras com acordes
 export const formatLyricsWithChords = (lyrics: string): string => {
   const lines = lyrics.split('\n');
   const formattedLines: string[] = [];
   
   for (const line of lines) {
     if (line.trim() === '') {
-      formattedLines.push('<div class="song-line"></div>');
+      formattedLines.push('<div class="song-line empty"></div>');
       continue;
     }
     
-    // Verificar se é um título de seção (linhas que começam com maiúscula e não têm acordes)
+    // Verificar se é um título de seção
     if (!line.includes('[') && line.match(/^[A-ZÁÉÍÓÚÂÊÎÔÛÀÈÌÒÙÃÕÇ]/)) {
       formattedLines.push(`<div class="section-title">${line}</div>`);
       continue;
     }
     
     // Processar linha com acordes
-    const chords: { chord: string; position: number }[] = [];
+    const chords: { chord: string; position: number; info: ChordParts | null }[] = [];
     let lyricsText = line;
     
     // Extrair acordes e suas posições
@@ -65,20 +162,32 @@ export const formatLyricsWithChords = (lyrics: string): string => {
     for (const match of chordMatches) {
       const chord = match[1];
       const originalPosition = match.index! - offset;
-      chords.push({ chord, position: originalPosition });
+      const chordInfo = parseChord(chord);
+      
+      chords.push({ 
+        chord, 
+        position: originalPosition, 
+        info: chordInfo 
+      });
       
       // Remover o acorde do texto das letras
       lyricsText = lyricsText.replace(match[0], '');
       offset += match[0].length;
     }
     
-    // Criar linha de acordes
+    // Criar linha de acordes com informações detalhadas
     let chordsHtml = '';
     if (chords.length > 0) {
-      for (const { chord, position } of chords) {
-        // Calcular posição mais precisa baseada no caractere
-        const leftPosition = Math.max(0, position * 0.55); // Ajuste mais preciso
-        chordsHtml += `<span class="chord" style="left: ${leftPosition}ch;">${chord}</span>`;
+      for (const { chord, position, info } of chords) {
+        const chordType = getChordType(chord);
+        const leftPosition = Math.max(0, position * 0.6); // Ajuste mais preciso
+        
+        chordsHtml += `<span class="chord" 
+          style="left: ${leftPosition}ch;" 
+          title="${chordType}" 
+          data-chord="${chord}"
+          data-valid="${isValidChord(chord)}"
+        >${chord}</span>`;
       }
     }
     
@@ -96,6 +205,7 @@ export const formatLyricsWithChords = (lyrics: string): string => {
   return formattedLines.join('');
 };
 
+// Função para transpor letras completas
 export const transposeLyrics = (lyrics: string, fromKey: MusicKey, toKey: MusicKey): string => {
   // Primeiro transpor os acordes
   const transposedLyrics = lyrics.replace(/\[([^\]]+)\]/g, (match, chord) => {
@@ -107,25 +217,83 @@ export const transposeLyrics = (lyrics: string, fromKey: MusicKey, toKey: MusicK
   return formatLyricsWithChords(transposedLyrics);
 };
 
+// Função para obter todas as tonalidades
 export const getAllKeys = (): MusicKey[] => {
   return ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 };
 
-// Função para validar se um acorde é válido
-export const isValidChord = (chord: string): boolean => {
-  return CHORD_REGEX.test(chord);
+// Função para obter tonalidades com nomes em português
+export const getKeysWithNames = (): Array<{ key: MusicKey; name: string }> => {
+  return [
+    { key: 'C', name: 'Dó' },
+    { key: 'C#', name: 'Dó#' },
+    { key: 'D', name: 'Ré' },
+    { key: 'D#', name: 'Ré#' },
+    { key: 'E', name: 'Mi' },
+    { key: 'F', name: 'Fá' },
+    { key: 'F#', name: 'Fá#' },
+    { key: 'G', name: 'Sol' },
+    { key: 'G#', name: 'Sol#' },
+    { key: 'A', name: 'Lá' },
+    { key: 'A#', name: 'Lá#' },
+    { key: 'B', name: 'Si' }
+  ];
 };
 
-// Função para obter informações detalhadas do acorde
-export const getChordInfo = (chord: string): { root: string; quality: string; extension: string } => {
-  const rootMatch = chord.match(/^[A-G][#b]?/);
-  const root = rootMatch ? rootMatch[0] : '';
+// Função para sugerir acordes relacionados
+export const getSuggestedChords = (key: MusicKey): string[] => {
+  const progression = CHORD_PROGRESSION[key];
+  const [I, ii, iii, IV, V, vi] = [0, 1, 2, 3, 4, 5].map(i => progression[i]);
   
-  const qualityMatch = chord.match(/(?:maj|min|m|M|sus|dim|aug|°|ø)/);
-  const quality = qualityMatch ? qualityMatch[0] : '';
+  return [
+    I,           // I
+    ii + 'm',    // ii
+    iii + 'm',   // iii
+    IV,          // IV
+    V,           // V
+    vi + 'm',    // vi
+    I + '7',     // I7
+    V + '7',     // V7
+    IV + 'maj7', // IVmaj7
+    vi + 'm7'    // vim7
+  ];
+};
+
+// Função para detectar progressões harmônicas comuns
+export const detectChordProgression = (chords: string[], key: MusicKey): string => {
+  const progression = CHORD_PROGRESSION[key];
+  const chordNumbers = chords.map(chord => {
+    const root = parseChord(chord)?.root;
+    if (!root) return null;
+    const index = progression.indexOf(normalizeNote(root));
+    return index !== -1 ? index + 1 : null;
+  }).filter(n => n !== null);
   
-  const extensionMatch = chord.match(/[0-9]+/);
-  const extension = extensionMatch ? extensionMatch[0] : '';
+  const progressionString = chordNumbers.join('-');
   
-  return { root, quality, extension };
+  // Progressões comuns
+  const commonProgressions: Record<string, string> = {
+    '1-5-6-4': 'I-V-vi-IV (Progressão Pop)',
+    '6-4-1-5': 'vi-IV-I-V (Progressão Alternativa)',
+    '1-4-5-1': 'I-IV-V-I (Progressão Clássica)',
+    '1-6-4-5': 'I-vi-IV-V (Progressão dos Anos 50)',
+    '2-5-1': 'ii-V-I (Progressão Jazz)',
+    '1-3-4-5': 'I-iii-IV-V (Progressão Romântica)'
+  };
+  
+  return commonProgressions[progressionString] || 'Progressão Personalizada';
+};
+
+export default {
+  transposeChord,
+  transposeLyrics,
+  formatLyricsWithChords,
+  parseChord,
+  getChordInfo,
+  getChordType,
+  isValidChord,
+  getAllKeys,
+  getKeysWithNames,
+  getSuggestedChords,
+  detectChordProgression
 };

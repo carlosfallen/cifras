@@ -34,8 +34,10 @@ export const useSongs = () => {
   }, [user]);
 
   const addSong = async (songData: Partial<Song>) => {
-    if (!user) return;
-
+      if (!user || !user.uid || !user.displayName) {
+    console.error('Usuário não autenticado!');
+    return;
+  }
     await addDoc(collection(db, 'songs'), {
       ...songData,
       authorId: user.uid,
