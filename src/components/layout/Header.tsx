@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Music, Search, User, LogOut, Plus, Menu, X } from 'lucide-react';
 import { useAuthContext } from '../auth/AuthContext';
 import { AuthModal } from '../auth/AuthModal';
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onSearch, searchQuery }) => {
   const { user, logout } = useAuthContext();
+  const location = useLocation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -26,37 +28,48 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, searchQuery }) => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-r from-blue-600 to-emerald-600 p-2 rounded-lg">
-                <Music className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">
-                CifraPlatform
-              </h1>
+              <Link to="/" className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-blue-600 to-emerald-600 p-2 rounded-lg">
+                  <Music className="h-6 w-6 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-gray-900 hidden sm:block">
+                  CifraPlatform
+                </h1>
+              </Link>
             </div>
 
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => onSearch(e.target.value)}
-                  placeholder="Buscar músicas, artistas..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            {location.pathname === '/' && (
+              <div className="hidden md:flex flex-1 max-w-lg mx-8">
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => onSearch(e.target.value)}
+                    placeholder="Buscar músicas, artistas..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
               {user ? (
                 <>
                   {user.userType === 'writer' && (
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <Link
+                      to="/writer"
+                      className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                        location.pathname === '/writer'
+                          ? 'bg-blue-700 text-white'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
                       <Plus className="h-4 w-4" />
-                      Nova Música
-                    </button>
+                      {location.pathname === '/writer' ? 'Painel' : 'Criar Música'}
+                    </Link>
                   )}
                   <div className="relative">
                     <button
@@ -104,18 +117,20 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, searchQuery }) => {
           </div>
 
           {/* Mobile Search */}
-          <div className="md:hidden pb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearch(e.target.value)}
-                placeholder="Buscar músicas, artistas..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+          {location.pathname === '/' && (
+            <div className="md:hidden pb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearch(e.target.value)}
+                  placeholder="Buscar músicas, artistas..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Mobile Menu */}
           {showMobileMenu && (
@@ -127,10 +142,14 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, searchQuery }) => {
                     <p className="text-sm text-gray-500 capitalize">{user.userType}</p>
                   </div>
                   {user.userType === 'writer' && (
-                    <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                    <Link
+                      to="/writer"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    >
                       <Plus className="h-4 w-4" />
-                      Nova Música
-                    </button>
+                      {location.pathname === '/writer' ? 'Painel' : 'Criar Música'}
+                    </Link>
                   )}
                   <button
                     onClick={handleLogout}
