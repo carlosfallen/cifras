@@ -7,8 +7,7 @@ import {
   signOut, 
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
-  getAuth
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
@@ -24,8 +23,6 @@ export const useAuth = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
-      
-      // O usuário já é criado/atualizado pelo onAuthStateChanged
       return firebaseUser;
     } catch (error) {
       console.error('Error signing in with Google:', error);
@@ -35,19 +32,44 @@ export const useAuth = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      console.log('Auth state changed:', firebaseUser?.uid);
+      
       if (firebaseUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          
           if (userDoc.exists()) {
-            setUser(userDoc.data() as User);
+            // ✅ CORREÇÃO: Sempre incluir o uid dos dados do Firebase Auth
+            const userData = userDoc.data();
+            const userWithUid: User = {
+              uid: firebaseUser.uid,  // ← Sempre usar o uid do Firebase Auth
+              email: userData.email || firebaseUser.email!,
+              displayName: userData.displayName || firebaseUser.displayName || 'Usuário',
+              createdAt: userData.createdAt?.toDate() || new Date(),
+              // Adicione outros campos se necessário
+              ...(userData.notificationToken && { notificationToken: userData.notificationToken }),
+              ...(userData.lastTokenUpdate && { lastTokenUpdate: userData.lastTokenUpdate })
+            };
+            
+            console.log('User data loaded:', userWithUid);
+            setUser(userWithUid);
           } else {
+            // Criar novo usuário
             const newUser: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email!,
               displayName: firebaseUser.displayName || 'Usuário',
               createdAt: new Date()
             };
-            await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+            
+            await setDoc(doc(db, 'users', firebaseUser.uid), {
+              email: newUser.email,
+              displayName: newUser.displayName,
+              createdAt: newUser.createdAt
+              // Não salvamos o uid no Firestore, ele vem do document ID
+            });
+            
+            console.log('New user created:', newUser);
             setUser(newUser);
           }
         } catch (error) {
@@ -55,8 +77,10 @@ export const useAuth = () => {
           setUser(null);
         }
       } else {
+        console.log('No user authenticated');
         setUser(null);
       }
+      
       setLoading(false);
     });
 
@@ -78,7 +102,13 @@ export const useAuth = () => {
       createdAt: new Date()
     };
     
-    await setDoc(doc(db, 'users', result.user.uid), newUser);
+    // Salvar no Firestore sem o uid (ele é o ID do documento)
+    await setDoc(doc(db, 'users', result.user.uid), {
+      email: newUser.email,
+      displayName: newUser.displayName,
+      createdAt: newUser.createdAt
+    });
+    
     return result;
   };
 

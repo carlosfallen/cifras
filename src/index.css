@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom breakpoint for extra small screens */
+@media (min-width: 375px) {
+  .xs\:inline { display: inline; }
+  .xs\:flex-row { flex-direction: row; }
+  .xs\:items-center { align-items: center; }
+  .xs\:gap-4 { gap: 1rem; }
+}
 
 /* Chord Display Styles */
 .chord-display {
@@ -97,6 +104,140 @@
   margin-top: 0;
 }
 
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+  .chord-display {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+  
+  .song-line {
+    margin-bottom: 0.8rem;
+    min-height: 2.2rem;
+  }
+  
+  .chords-line {
+    height: 1.3rem;
+    font-size: 0.85rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  
+  .chord {
+    font-size: 0.8rem;
+    padding: 2px 3px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .chord-display {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    line-height: 1.6;
+  }
+  
+  .song-line {
+    margin-bottom: 0.7rem;
+    min-height: 2rem;
+  }
+  
+  .chords-line {
+    height: 1.2rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .chord {
+    font-size: 0.75rem;
+    padding: 1px 3px;
+    max-width: calc(100vw - 3rem);
+  }
+  
+  .section-title {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    margin-top: 1rem;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+  .chord-display {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  
+  .song-line {
+    margin-bottom: 0.6rem;
+    min-height: 1.8rem;
+  }
+  
+  .chords-line {
+    height: 1.1rem;
+    font-size: 0.75rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  
+  .chord {
+    font-size: 0.7rem;
+    padding: 1px 2px;
+    max-width: calc(100vw - 2.5rem);
+  }
+  
+  .section-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+    margin-top: 0.8rem;
+  }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 375px) {
+  .chord-display {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  
+  .song-line {
+    margin-bottom: 0.5rem;
+    min-height: 1.6rem;
+  }
+  
+  .chords-line {
+    height: 1rem;
+    font-size: 0.7rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+  
+  .chord {
+    font-size: 0.65rem;
+    padding: 1px 2px;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    margin-top: 0.6rem;
+  }
+}
 
 /* Print specific chord styles */
 @media print {
@@ -220,6 +361,7 @@
     page-break-inside: avoid;
   }
   
+
 }
 
 /* Melhorias gerais */
@@ -290,4 +432,52 @@ select:focus {
   position: relative;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Melhorias para telas muito pequenas */
+@media (max-width: 320px) {
+  .chord-display {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  
+  .song-line {
+    margin-bottom: 0.4rem;
+    min-height: 1.4rem;
+  }
+  
+  .chords-line {
+    height: 0.9rem;
+    font-size: 0.65rem;
+  }
+  
+  .lyrics-line {
+    font-size: 0.75rem;
+    line-height: 1.1;
+  }
+  
+  .chord {
+    font-size: 0.6rem;
+    padding: 1px 1px;
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+/* Melhorias para landscape em mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .chord-display {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  .song-line {
+    margin-bottom: 0.5rem;
+    min-height: 1.6rem;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    margin-top: 0.6rem;
+  }
 }

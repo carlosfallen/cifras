@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Music, Save, X } from 'lucide-react';
 import { Song, MusicKey } from '../types';
-import { getAllKeys } from '../utils/chordTransposition';
+import { getAllKeys, getKeysWithNames } from '../utils/chordTransposition';
 
 interface SongFormProps {
   song?: Song;
@@ -19,13 +19,14 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  // Todos os tons (maiores e menores)
-  const allKeys = [
-    // Tons maiores
-    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
-    // Tons menores
-    'Am', 'A#m', 'Bbm', 'Bm', 'Cm', 'C#m', 'Dbm', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gbm', 'Gm', 'G#m', 'Abm'
-  ];
+  // Usar as tonalidades do chordTransposition
+  const keysWithNames = getKeysWithNames();
+  
+  // Tonalidades menores baseadas nas maiores
+  const minorKeys = getAllKeys().map(key => ({
+    key: `${key}m` as MusicKey,
+    name: `${keysWithNames.find(k => k.key === key)?.name || key}m`
+  }));
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -141,16 +142,16 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <optgroup label="Tons Maiores">
-                    {allKeys.filter(key => !key.includes('m')).map((key) => (
+                    {keysWithNames.map(({ key, name }) => (
                       <option key={key} value={key}>
-                        {key} (Maior)
+                        {key} ({name})
                       </option>
                     ))}
                   </optgroup>
                   <optgroup label="Tons Menores">
-                    {allKeys.filter(key => key.includes('m')).map((key) => (
+                    {minorKeys.map(({ key, name }) => (
                       <option key={key} value={key}>
-                        {key} (Menor)
+                        {key} ({name})
                       </option>
                     ))}
                   </optgroup>

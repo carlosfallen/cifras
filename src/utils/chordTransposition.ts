@@ -12,8 +12,9 @@ const ENHARMONIC_MAP: Record<string, string> = {
   'Bb': 'A#'
 };
 
-// Progressão de acordes para cada tonalidade
-const CHORD_PROGRESSION: Record<MusicKey, string[]> = {
+// Progressão de acordes para cada tonalidade (maiores e menores)
+const CHORD_PROGRESSION: Record<string, string[]> = {
+  // Tonalidades maiores
   'C': ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
   'C#': ['C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C'],
   'D': ['D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#'],
@@ -25,7 +26,21 @@ const CHORD_PROGRESSION: Record<MusicKey, string[]> = {
   'G#': ['G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G'],
   'A': ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
   'A#': ['A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A'],
-  'B': ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#']
+  'B': ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#'],
+  
+  // Tonalidades menores (baseadas no tom relativo maior)
+  'Am': ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
+  'A#m': ['A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A'],
+  'Bm': ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#'],
+  'Cm': ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
+  'C#m': ['C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C'],
+  'Dm': ['D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#'],
+  'D#m': ['D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D'],
+  'Em': ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#'],
+  'Fm': ['F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E'],
+  'F#m': ['F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F'],
+  'Gm': ['G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#'],
+  'G#m': ['G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G']
 };
 
 // Interface para partes do acorde
@@ -64,10 +79,12 @@ export const parseChord = (chord: string): ChordParts | null => {
 };
 
 // Função para transpor nota individual
-const transposeNote = (note: string, fromKey: MusicKey, toKey: MusicKey): string => {
+const transposeNote = (note: string, fromKey: string, toKey: string): string => {
   const normalizedNote = normalizeNote(note);
   const fromProgression = CHORD_PROGRESSION[fromKey];
   const toProgression = CHORD_PROGRESSION[toKey];
+  
+  if (!fromProgression || !toProgression) return note;
   
   const position = fromProgression.indexOf(normalizedNote);
   if (position === -1) return note;
@@ -76,7 +93,7 @@ const transposeNote = (note: string, fromKey: MusicKey, toKey: MusicKey): string
 };
 
 // Função principal para transpor acordes
-export const transposeChord = (chord: string, fromKey: MusicKey, toKey: MusicKey): string => {
+export const transposeChord = (chord: string, fromKey: string, toKey: string): string => {
   const parts = parseChord(chord);
   if (!parts) return chord;
   
@@ -206,7 +223,7 @@ export const formatLyricsWithChords = (lyrics: string): string => {
 };
 
 // Função para transpor letras completas
-export const transposeLyrics = (lyrics: string, fromKey: MusicKey, toKey: MusicKey): string => {
+export const transposeLyrics = (lyrics: string, fromKey: string, toKey: string): string => {
   // Primeiro transpor os acordes
   const transposedLyrics = lyrics.replace(/\[([^\]]+)\]/g, (match, chord) => {
     const transposedChord = transposeChord(chord, fromKey, toKey);
@@ -217,9 +234,16 @@ export const transposeLyrics = (lyrics: string, fromKey: MusicKey, toKey: MusicK
   return formatLyricsWithChords(transposedLyrics);
 };
 
-// Função para obter todas as tonalidades
+// Função para obter todas as tonalidades maiores
 export const getAllKeys = (): MusicKey[] => {
   return ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+};
+
+// Função para obter todas as tonalidades (maiores e menores)
+export const getAllKeysWithMinor = (): string[] => {
+  const majorKeys = getAllKeys();
+  const minorKeys = majorKeys.map(key => `${key}m`);
+  return [...majorKeys, ...minorKeys];
 };
 
 // Função para obter tonalidades com nomes em português
@@ -241,8 +265,10 @@ export const getKeysWithNames = (): Array<{ key: MusicKey; name: string }> => {
 };
 
 // Função para sugerir acordes relacionados
-export const getSuggestedChords = (key: MusicKey): string[] => {
+export const getSuggestedChords = (key: string): string[] => {
   const progression = CHORD_PROGRESSION[key];
+  if (!progression) return [];
+  
   const [I, ii, iii, IV, V, vi] = [0, 1, 2, 3, 4, 5].map(i => progression[i]);
   
   return [
@@ -260,8 +286,10 @@ export const getSuggestedChords = (key: MusicKey): string[] => {
 };
 
 // Função para detectar progressões harmônicas comuns
-export const detectChordProgression = (chords: string[], key: MusicKey): string => {
+export const detectChordProgression = (chords: string[], key: string): string => {
   const progression = CHORD_PROGRESSION[key];
+  if (!progression) return 'Tonalidade não reconhecida';
+  
   const chordNumbers = chords.map(chord => {
     const root = parseChord(chord)?.root;
     if (!root) return null;
@@ -293,6 +321,7 @@ export default {
   getChordType,
   isValidChord,
   getAllKeys,
+  getAllKeysWithMinor,
   getKeysWithNames,
   getSuggestedChords,
   detectChordProgression

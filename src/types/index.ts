@@ -1,8 +1,10 @@
 export interface User {
-  uid: string;
+  uid: string;  // ← Certifique-se de que esta propriedade existe
   email: string;
   displayName: string;
   createdAt: Date;
+  notificationToken?: string;  // Opcional
+  lastTokenUpdate?: any;       // Opcional
 }
 
 export interface Song {
@@ -10,15 +12,26 @@ export interface Song {
   title: string;
   artist: string;
   originalKey: MusicKey;
-  harmonicMinorKey: string;
   lyrics: string;
-  authorId: string;
-  authorName: string;
   createdAt: Date;
   updatedAt: Date;
+  tags?: string[];
+  tempo?: number;
+  timeSignature?: string;
+  capo?: number;
+  notes?: string;
 }
 
-export type MusicKey = 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B';
+export interface SongFilter {
+  search?: string;
+  key?: MusicKey;
+  artist?: string;
+  tags?: string[];
+}
+
+export type MusicKey = 
+  | 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B'
+  | 'Am' | 'A#m' | 'Bm' | 'Cm' | 'C#m' | 'Dm' | 'D#m' | 'Em' | 'Fm' | 'F#m' | 'Gm' | 'G#m';
 
 export interface ScheduledSong {
   id: string;
@@ -29,4 +42,22 @@ export interface ScheduledSong {
   createdAt: Date;
   createdBy: string | null;
   createdByName: string;
+}
+
+// Interface para configurações de transposição
+export interface TransposeConfig {
+  fromKey: MusicKey;
+  toKey: MusicKey;
+  showChordNames?: boolean;
+  showChordDiagrams?: boolean;
+}
+
+// Interface para informações de acorde
+export interface ChordInfo {
+  root: string;
+  quality: string;
+  extension?: string;
+  bass?: string;
+  type: string;
+  valid: boolean;
 }
