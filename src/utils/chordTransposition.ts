@@ -210,10 +210,8 @@ export const formatLyricsWithChords = (lyrics: string): string => {
     
     // Montar a linha completa
     const songLineHtml = `
-      <div class="song-line">
-        <div class="chords-line">${chordsHtml}</div>
+        <div class="chord-line">${chordsHtml}</div>
         <div class="lyrics-line">${lyricsText || '&nbsp;'}</div>
-      </div>
     `;
     
     formattedLines.push(songLineHtml);

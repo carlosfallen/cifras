@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { ChevronLeft, Edit, Trash2, ChevronUp, ChevronDown, Calendar, Music, MoreVertical } from 'lucide-react';
 import { ScheduleSongForm } from './Calendar/ScheduleSongForm';
 import { Song, MusicKey } from '../types';
-import { transposeLyrics, formatLyricsWithChords, getAllKeys } from '../utils/chordTransposition';
-import { processChords, formatProcessedSongToHTML } from '../utils/chordProcessing';
+import { getAllKeys } from '../utils/chordTransposition';
+import { processChords, formatProcessedSongToHTMLWithTransposition } from '../utils/chordProcessing';
 
 interface SongViewerProps {
   song: Song;
@@ -30,22 +30,19 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
     setCurrentKey(keys[prevIndex]);
   };
 
-  // Processa a cifra de acordo com o formato detectado
+  // Processa a cifra uma única vez
   const processedSong = useMemo(() => {
     return processChords(song.lyrics);
   }, [song.lyrics]);
 
-  // Gera o HTML com transposição se necessário
+  // Gera o HTML com transposição mantendo o layout original
   const displayedLyrics = useMemo(() => {
-    if (currentKey === song.originalKey) {
-      return formatProcessedSongToHTML(processedSong);
-    } else {
-      // Para transposição, converte para formato de colchetes temporariamente
-      const transposedLyrics = transposeLyrics(song.lyrics, song.originalKey as MusicKey, currentKey);
-      const transposedProcessed = processChords(transposedLyrics);
-      return formatProcessedSongToHTML(transposedProcessed);
-    }
-  }, [processedSong, currentKey, song.originalKey, song.lyrics]);
+    return formatProcessedSongToHTMLWithTransposition(
+      processedSong,
+      song.originalKey as MusicKey,
+      currentKey
+    );
+  }, [processedSong, song.originalKey, currentKey]);
 
   const handleDelete = () => {
     if (confirm('Tem certeza que deseja excluir esta música?')) {
@@ -128,7 +125,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
       </header>
 
       {/* Main Content */}
-      <main className="w-screen px-0 py-4 pb-6">
+      <main className="w-screen px-4 py-4 pb-6">
         {/* Song Info Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 p-6 mb-4">
           <div className="flex items-start gap-4">
@@ -207,10 +204,12 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
           <div className="p-4">
             <div className="chord-display-container bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 overflow-x-auto">
               <div 
-                className="chord-display min-w-0 font-mono text-sm leading-relaxed"
+                className="chord-display min-w-0 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: displayedLyrics }}
                 style={{
-                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                  fontSize: '14px',
+                  lineHeight: '1.4'
                 }}
               />
             </div>

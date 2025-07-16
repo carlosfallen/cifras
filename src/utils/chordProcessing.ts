@@ -1,5 +1,6 @@
 import {
   parseChord,
+  transposeChord,
   CHORD_REGEX,
 } from '../utils/chordTransposition';
 
@@ -58,11 +59,13 @@ export function processChords(lyrics: string): ProcessedSong {
  */
 function isChordLine(line: string): boolean {
   const trimmed = line.trim();
-  if (!trimmed) return false;
-
-  // tenta encontrar *somente* tokens de acorde na linha inteira
+  
+  // Ignore linhas que são títulos de seção (ex: [VERSO])
+  if (/^\[[^\]]+\]$/.test(trimmed)) return false;
+  
+  // Lógica original de detecção de acordes
   const tokens = trimmed.split(/(?<=\))|\s+|(?=\()/);
-  return tokens.every(token => parseChord(token) !== null);
+  return tokens.length > 0 && tokens.every(token => parseChord(token) !== null);
 }
 
 /**
@@ -71,6 +74,9 @@ function isChordLine(line: string): boolean {
 function extractChordsFromLine(line: string, lineIndex: number): ChordPosition[] {
   const chords: ChordPosition[] = [];
   let match: RegExpExecArray | null;
+  
+  // Reset regex para garantir que comece do início
+  CHORD_REGEX.lastIndex = 0;
 
   // percorre cada ocorrência do CHORD_REGEX
   while ((match = CHORD_REGEX.exec(line)) !== null) {
@@ -88,8 +94,13 @@ function extractChordsFromLine(line: string, lineIndex: number): ChordPosition[]
 
 /**
  * Converte cifra processada para HTML com acordes posicionados acima das letras
+ * Mantém layout consistente independente da transposição
  */
-export function formatProcessedSongToHTML(processedSong: ProcessedSong): string {
+export function formatProcessedSongToHTML(
+  processedSong: ProcessedSong, 
+  fromKey?: string, 
+  toKey?: string
+): string {
   return processedSong.lines.map(line => {
     const text = line.lyrics;
     const topicMatch = text.trim().match(/^\[([^\]]+)\]$/);
@@ -109,33 +120,92 @@ export function formatProcessedSongToHTML(processedSong: ProcessedSong): string 
       ...line.chords.map(c => c.position + c.chord.length)
     );
 
-    // Cria um mapa de posição → chordHtml
-    const chordMap = new Map<number, string>();
+    // Cria um mapa de posição → chord (com transposição se necessário)
+    const chordMap = new Map<number, { original: string; transposed: string }>();
+    
     for (const { chord, position } of line.chords) {
-      chordMap.set(position, `<b>${chord}</b>`);
+      const transposedChord = (fromKey && toKey && fromKey !== toKey) 
+        ? transposeChord(chord, fromKey, toKey)
+        : chord;
+      
+      chordMap.set(position, { 
+        original: chord, 
+        transposed: transposedChord 
+      });
     }
 
     // Monta a linha de acordes caractere a caractere
     let chordLine = '';
-    for (let i = 0; i < maxLength; i++) {
+    let i = 0;
+    
+    while (i < maxLength) {
       if (chordMap.has(i)) {
-        // insere o acorde e “pula” à frente pelo comprimento da cifra
-        const html = chordMap.get(i)!;
-        chordLine += html;
-        // avançar o índice lógico para não reescrever espaços
-        i += ( (chordMap.get(i)![0] === '<') 
-               ?  // se HTML, estimativa de avanço: use chord.length
-                 // (não a string HTML completa)
-                 line.chords.find(c => c.position === i)!.chord.length 
-               : 0 );
+        const { transposed } = chordMap.get(i)!;
+        const chordHtml = `<b style="color: #1e40af;">${transposed}</b>`;
+        chordLine += chordHtml;
+        
+        // Avança pelo comprimento do acorde ORIGINAL para manter posicionamento
+        const originalChord = chordMap.get(i)!.original;
+        i += originalChord.length;
       } else {
         chordLine += ' ';
+        i++;
       }
     }
 
-    // **Importante**: não colapsar espaços, preserve exatamente
-    return `
-<div class="chord-line" style="white-space: pre;">${chordLine}</div>
-<div class="lyrics-line">${text}</div>`;
+    // Preserva espaçamento exato
+    return `<div class="chord-line" style="white-space: pre; font-family: monospace; line-height: 1.2; margin-bottom: 2px;">${chordLine}</div>
+<div class="lyrics-line" style="font-family: monospace; line-height: 1.2;">${text}</div>`;
+  }).join('\n');
+}
+
+/**
+ * Versão melhorada que mantém o layout original
+ */
+export function formatProcessedSongToHTMLWithTransposition(
+  processedSong: ProcessedSong, 
+  originalKey: string, 
+  targetKey: string
+): string {
+  return processedSong.lines.map(line => {
+    const text = line.lyrics;
+    const topicMatch = text.trim().match(/^\[([^\]]+)\]$/);
+
+    if (topicMatch) {
+      return `<div class="song-topic"><b style="color:#000">${topicMatch[1]}</b></div>`;
+    }
+
+    if (line.chords.length === 0) {
+      return `<div class="lyrics-line" style="font-family: monospace; line-height: 1.4;">${text}</div>`;
+    }
+
+    // Calcula o comprimento necessário baseado no texto original
+    const textLength = text.length;
+    const maxChordEnd = Math.max(
+      ...line.chords.map(c => c.position + c.chord.length),
+      0
+    );
+    const totalWidth = Math.max(textLength, maxChordEnd);
+
+    // Cria array de caracteres para a linha de acordes
+    const chordLineArray = new Array(totalWidth).fill(' ');
+    
+    // Posiciona os acordes transpostos mantendo as posições originais
+    for (const { chord, position } of line.chords) {
+      const transposedChord = originalKey !== targetKey 
+        ? transposeChord(chord, originalKey, targetKey)
+        : chord;
+      
+      // Insere o acorde transposto na posição original
+      for (let i = 0; i < transposedChord.length && (position + i) < totalWidth; i++) {
+        chordLineArray[position + i] = transposedChord[i];
+      }
+    }
+
+    const chordLineText = chordLineArray.join('');
+    const chordLineHtml = chordLineText.replace(/(\S+)/g, '<b style="color: #1e40af;">$1</b>');
+
+    return `<div class="chord-line" style="white-space: pre; font-family: monospace; line-height: 1.2; margin-bottom: 2px; color: #1e40af;">${chordLineHtml}</div>
+<div class="lyrics-line" style="font-family: monospace; line-height: 1.4;">${text}</div>`;
   }).join('\n');
 }
