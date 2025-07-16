@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Clock, Music as MusicIcon, X } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Clock, Music as MusicIcon, X, Trash2 } from 'lucide-react';
 import { Song, ScheduledSong } from '../../types';
 import { useSongs } from '../../hooks/useSongs';
 import { useScheduledSongs } from '../../hooks/useScheduledSongs';
@@ -16,8 +16,9 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   isFullPage = false 
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const { songs } = useSongs();
-  const { scheduledSongs = [], loading: loadingScheduled, fetchScheduledSongs } = useScheduledSongs();
+  const { scheduledSongs = [], loading: loadingScheduled, fetchScheduledSongs, removeScheduledSong } = useScheduledSongs();
   
   // Memoizar a data de hoje para evitar recriações
   const today = useMemo(() => new Date(), []);
@@ -82,6 +83,25 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     const song = getSongDetails(songId);
     if (song) {
       onSongSelect(song);
+    }
+  };
+
+  const handleRemoveFromSchedule = async (scheduledId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Evita que o clique no botão de remoção abra a música
+    
+    if (removingId === scheduledId) return; // Evita cliques duplos
+    
+    setRemovingId(scheduledId);
+    
+    try {
+      await removeScheduledSong(scheduledId);
+      // Atualiza a lista após remoção
+      await fetchScheduledSongs();
+    } catch (error) {
+      console.error('Erro ao remover música da agenda:', error);
+      // Aqui você pode adicionar uma notificação de erro se tiver um sistema de toast
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -222,62 +242,89 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
             <div className="space-y-3">
               {selectedDateSongs.map((scheduled, index) => {
                 const song = getSongDetails(scheduled.songId);
+                const isRemoving = removingId === scheduled.id;
+                
                 return song ? (
-                  <button 
+                  <div 
                     key={scheduled.id} 
-                    onClick={() => handleSongClick(scheduled.songId)}
-                    className="w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all duration-200 cursor-pointer active:scale-[0.98] text-left"
+                    className={`group relative bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all duration-200 ${
+                      isRemoving ? 'opacity-50 pointer-events-none' : ''
+                    }`}
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Número da música */}
-                      <div className="bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-bold shrink-0 mt-1">
-                        #{index + 1}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        {/* Título da música */}
-                        <h4 className="font-bold text-lg text-gray-900 mb-2 leading-tight">
-                          {song.title}
-                        </h4>
+                    <button 
+                      onClick={() => handleSongClick(scheduled.songId)}
+                      className="w-full p-4 text-left cursor-pointer active:scale-[0.98] transition-transform"
+                      disabled={isRemoving}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Número da música */}
+                        <div className="bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-bold shrink-0 mt-1">
+                          #{index + 1}
+                        </div>
                         
-                        {/* Informações em cards */}
-                        <div className="space-y-2 mb-3">
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-medium">
-                              👤 {scheduled.singer}
-                            </div>
-                          </div>
+                        <div className="flex-1 min-w-0 pr-12">
+                          {/* Título da música */}
+                          <h4 className="font-bold text-lg text-gray-900 mb-2 leading-tight">
+                            {song.title}
+                          </h4>
                           
-                          {song.artist && (
+                          {/* Informações em cards */}
+                          <div className="space-y-2 mb-3">
                             <div className="flex items-center gap-2 text-sm">
                               <div className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-medium">
-                                🎵 {song.artist}
+                                👤 {scheduled.singer}
                               </div>
                             </div>
-                          )}
-                        </div>
-                        
-                        {/* Footer da música */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                              {song.originalKey}
-                            </span>
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Clock size={12} />
-                              {new Date(scheduled.date).toLocaleTimeString('pt-BR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
+                            
+                            {song.artist && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <div className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-medium">
+                                  🎵 {song.artist}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="text-sm text-blue-600 font-medium">
-                            Ver Cifra →
+                          
+                          {/* Footer da música */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                                {song.originalKey}
+                              </span>
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <Clock size={12} />
+                                {new Date(scheduled.date).toLocaleTimeString('pt-BR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                            <div className="text-sm text-blue-600 font-medium">
+                              Ver Cifra →
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                    
+                    {/* Botão de remoção */}
+                    <button
+                      onClick={(e) => handleRemoveFromSchedule(scheduled.id, e)}
+                      disabled={isRemoving}
+                      aria-label="Remover da agenda"
+                      className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 ${
+                        isRemoving 
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                          : 'bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 opacity-0 group-hover:opacity-100 active:scale-95'
+                      }`}
+                    >
+                      {isRemoving ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
+                    </button>
+                  </div>
                 ) : null;
               })}
             </div>

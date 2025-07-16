@@ -125,7 +125,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
       </header>
 
       {/* Main Content */}
-      <main className="w-screen px-4 py-4 pb-6">
+      <main className="w-screen">
         {/* Song Info Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 p-6 mb-4">
           <div className="flex items-start gap-4">
@@ -193,7 +193,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
         )}
 
         {/* Song Content */}
-        <div className="w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 overflow-hidden">
+        <div className="w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 overflow-y-auto">
           <div className="p-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
               <Music className="h-4 w-4" />
