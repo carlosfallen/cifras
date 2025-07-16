@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Music, Save, X } from 'lucide-react';
+import { Music, Save, X, Info } from 'lucide-react';
 import { Song, MusicKey } from '../types';
 import { getAllKeys, getKeysWithNames } from '../utils/chordTransposition';
 
@@ -17,6 +17,7 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
     lyrics: song?.lyrics || ''
   });
 
+  const [detectedFormat, setDetectedFormat] = useState<'brackets' | 'above' | 'mixed'>('brackets');
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   // Usar as tonalidades do chordTransposition
@@ -63,6 +64,12 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const formatLabels = {
+    brackets: 'Colchetes [C]',
+    above: 'Acordes acima',
+    mixed: 'Formato misto'
   };
 
   return (
@@ -144,14 +151,14 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
                   <optgroup label="Tons Maiores">
                     {keysWithNames.map(({ key, name }) => (
                       <option key={key} value={key}>
-                        {key} ({name})
+                        {key}
                       </option>
                     ))}
                   </optgroup>
                   <optgroup label="Tons Menores">
                     {minorKeys.map(({ key, name }) => (
                       <option key={key} value={key}>
-                        {key} ({name})
+                        {key}
                       </option>
                     ))}
                   </optgroup>
@@ -164,9 +171,12 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
 
             {/* Lyrics/Chords */}
             <div>
-              <label htmlFor="lyrics" className="block text-sm font-medium text-gray-700 mb-2">
-                Letra e Acordes *
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <label htmlFor="lyrics" className="block text-sm font-medium text-gray-700">
+                  Letra e Acordes *
+                </label>
+              </div>
+              
               <textarea
                 id="lyrics"
                 value={formData.lyrics}
@@ -174,21 +184,17 @@ export const SongForm: React.FC<SongFormProps> = ({ song, onSave, onCancel }) =>
                 className={`w-full h-96 border rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
                   errors.lyrics ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder="Digite a letra com os acordes entre colchetes:
-
-[C]Imagine there's no [F]heaven
-[C]It's easy if you [F]try
-[C]No hell be[F]low us
-[C]Above us only [F]sky
-
-[Am]Imagine all the [Dm]people [F]living for to[G]day..."
+                placeholder="Digite a letra com os acordes. Você pode usar esse formato:
+                      C#
+Com Aquele Mestre escrevendo
+                A#m7
+Com o dedo no chão
+                            D#m7
+Ouvindo os fariseus a lhes falar"
               />
               {errors.lyrics && (
                 <p className="mt-1 text-sm text-red-600">{errors.lyrics}</p>
               )}
-              <p className="mt-2 text-sm text-gray-500">
-                Use colchetes para acordes: [C] [Am] [F] [G]
-              </p>
             </div>
 
             {/* Action Buttons */}

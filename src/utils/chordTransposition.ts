@@ -53,7 +53,7 @@ interface ChordParts {
 }
 
 // Regex mais preciso para capturar acordes complexos
-const CHORD_REGEX = /\b([A-G])([#b]?)(maj|min|m|M|sus[24]?|dim|aug|\+|°|ø|add)?(1[0-3]|[2-9]|add[2-9]|add1[0-3])?(?:\/([A-G][#b]?))?\b/g;
+export const CHORD_REGEX = /\b([A-G])([#b]?)(maj|min|m|M|sus[24]?|dim|aug|\+|°|ø|add)?(1[0-3]|[2-9]|add[2-9]|add1[0-3])?(?:\/([A-G][#b]?))?\b/g;
 
 // Função para normalizar nota (converte bemóis para sustenidos)
 const normalizeNote = (note: string): string => {
@@ -173,7 +173,7 @@ export const formatLyricsWithChords = (lyrics: string): string => {
     let lyricsText = line;
     
     // Extrair acordes e suas posições
-    const chordMatches = [...line.matchAll(/\[([^\]]+)\]/g)];
+    const chordMatches = [...line.matchAll(/[\[\(]([^\]\)]+)[\]\)]/g)];
     let offset = 0;
     
     for (const match of chordMatches) {

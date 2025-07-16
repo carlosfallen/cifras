@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronLeft, Edit, Trash2, ChevronUp, ChevronDown, Calendar, Music, MoreVertical } from 'lucide-react';
 import { ScheduleSongForm } from './Calendar/ScheduleSongForm';
 import { Song, MusicKey } from '../types';
 import { transposeLyrics, formatLyricsWithChords, getAllKeys } from '../utils/chordTransposition';
+import { processChords, formatProcessedSongToHTML } from '../utils/chordProcessing';
 
 interface SongViewerProps {
   song: Song;
@@ -29,15 +30,34 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
     setCurrentKey(keys[prevIndex]);
   };
 
-  const transposedLyrics = currentKey === song.originalKey 
-    ? formatLyricsWithChords(song.lyrics)
-    : transposeLyrics(song.lyrics, song.originalKey as MusicKey, currentKey);
+  // Processa a cifra de acordo com o formato detectado
+  const processedSong = useMemo(() => {
+    return processChords(song.lyrics);
+  }, [song.lyrics]);
+
+  // Gera o HTML com transposição se necessário
+  const displayedLyrics = useMemo(() => {
+    if (currentKey === song.originalKey) {
+      return formatProcessedSongToHTML(processedSong);
+    } else {
+      // Para transposição, converte para formato de colchetes temporariamente
+      const transposedLyrics = transposeLyrics(song.lyrics, song.originalKey as MusicKey, currentKey);
+      const transposedProcessed = processChords(transposedLyrics);
+      return formatProcessedSongToHTML(transposedProcessed);
+    }
+  }, [processedSong, currentKey, song.originalKey, song.lyrics]);
 
   const handleDelete = () => {
     if (confirm('Tem certeza que deseja excluir esta música?')) {
       onDelete();
     }
     setShowActionsMenu(false);
+  };
+
+  const formatLabels = {
+    brackets: 'Colchetes',
+    above: 'Acordes acima',
+    mixed: 'Formato misto'
   };
 
   return (
@@ -108,7 +128,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
       </header>
 
       {/* Main Content */}
-      <main className="px-4 py-4 pb-6">
+      <main className="w-screen px-0 py-4 pb-6">
         {/* Song Info Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 p-6 mb-4">
           <div className="flex items-start gap-4">
@@ -119,9 +139,12 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
               <h1 className="text-xl font-bold text-gray-900 mb-1 break-words">
                 {song.title}
               </h1>
-              <p className="text-gray-600 break-words">
+              <p className="text-gray-600 break-words mb-2">
                 por {song.artist}
               </p>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>Formato: {formatLabels[processedSong.format]}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -173,7 +196,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
         )}
 
         {/* Song Content */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 overflow-hidden">
+        <div className="w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 overflow-hidden">
           <div className="p-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
               <Music className="h-4 w-4" />
@@ -185,7 +208,7 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
             <div className="chord-display-container bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 overflow-x-auto">
               <div 
                 className="chord-display min-w-0 font-mono text-sm leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: transposedLyrics }}
+                dangerouslySetInnerHTML={{ __html: displayedLyrics }}
                 style={{
                   fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
                 }}
@@ -194,42 +217,6 @@ export const SongViewer: React.FC<SongViewerProps> = ({ song, onBack, onEdit, on
           </div>
         </div>
       </main>
-
-      <style>{`
-        
-        .chord-display b {
-          color: #2563eb;
-          font-weight: 700;
-          font-size: 0.9em;
-          background: rgba(37, 99, 235, 0.1);
-          padding: 1px 4px;
-          border-radius: 4px;
-          margin: 0 1px;
-        }
-        
-        .chord-display br {
-          line-height: 1.8;
-        }
-        
-        /* Scrollbar styling */
-        .chord-display-container::-webkit-scrollbar {
-          height: 6px;
-        }
-        
-        .chord-display-container::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 3px;
-        }
-        
-        .chord-display-container::-webkit-scrollbar-thumb {
-          background: rgba(37, 99, 235, 0.3);
-          border-radius: 3px;
-        }
-        
-        .chord-display-container::-webkit-scrollbar-thumb:hover {
-          background: rgba(37, 99, 235, 0.5);
-        }
-      `}</style>
     </div>
   );
 };

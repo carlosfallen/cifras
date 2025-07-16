@@ -61,3 +61,27 @@ export interface ChordInfo {
   type: string;
   valid: boolean;
 }
+
+export interface ChordPosition {
+  chord: string;
+  position: number;
+  line: number;
+}
+
+export interface ProcessedLine {
+  lyrics: string;
+  chords: ChordPosition[];
+}
+
+export interface ProcessedSong {
+  lines: ProcessedLine[];
+  format: 'brackets' | 'above' | 'mixed';
+}
+
+export interface ChordParts {
+  root: string;
+  accidental: string;
+  quality: string;
+  extension: string;
+  bass?: string;
+}
